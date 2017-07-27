@@ -6,7 +6,7 @@ from PyQt5.QtCore import QSize
 from bs4 import BeautifulSoup
 import requests
 from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QFileDialog, QPushButton, QLineEdit, QVBoxLayout, \
-    QVBoxLayout, QGridLayout, QMessageBox, QListWidget, QFrame, QHBoxLayout, QGroupBox, QFormLayout
+    QVBoxLayout, QGridLayout, QMessageBox, QListWidget, QFrame, QHBoxLayout, QGroupBox, QFormLayout, QProgressBar
 
 
 class Webtooncrawler(QWidget):
@@ -58,14 +58,36 @@ class Webtooncrawler(QWidget):
         self.latest_episode_layout.addStretch()
         self.latest_episode_layout.addWidget(QLabel('latest episode'))
         self.latest_episode_layout.addWidget(self.latest_episode_set)
-        self.latest_episode_set.setMaximumSize(40,20)
+        self.latest_episode_set.setMaximumSize(40, 20)
         self.latest_episode_layout.addStretch()
 
-        grid.addLayout(self.latest_episode_layout,4,1)
+        grid.addLayout(self.latest_episode_layout, 4, 1)
 
+        self.episode_range_layout = QHBoxLayout()
+        self.episode_range_layout.addStretch()
+        self.episode_range_layout.addWidget(QLabel('episode'))
+        self.episode_range_layout.addWidget(QLabel('min'))
+        self.episdoe_min_range_input = QLineEdit()
+        self.episdoe_min_range_input.setMaximumSize(40, 20)
+        self.episode_range_layout.addWidget(self.episdoe_min_range_input)
+        self.episode_range_layout.addWidget(QLabel('~'))
+        self.episode_range_layout.addWidget(QLabel('max'))
+        self.episdoe_max_range_input = QLineEdit()
+        self.episdoe_max_range_input.setMaximumSize(40, 20)
+        self.episode_range_layout.addWidget(self.episdoe_max_range_input)
+        self.episode_range_layout.addStretch()
+
+        grid.addLayout(self.episode_range_layout, 5, 1)
+
+        self.loading_bar = QProgressBar()
+        grid.addWidget(self.loading_bar, 6, 0, 2, 3)
+
+        self.download_button = QPushButton('download', self)
+        grid.addWidget(self.download_button, 8, 1)
+        self.download_button.clicked.connect(self.webtoon_images_download)
 
         self.setLayout(grid)
-        self.setGeometry(300, 300, 540, 400)
+        self.setGeometry(300, 300, 540, 300)
         self.show()
 
     def OFALLwebtoonlist_selcet_webtoon(self):
@@ -75,8 +97,9 @@ class Webtooncrawler(QWidget):
             if select_webtoon[0] == select_webtoon_index + 1:
                 self.webtoon_name = select_webtoon[1]
                 self.webtoon_titleId = select_webtoon[2]
-        print(self.webtoon_name, self.webtoon_titleId)
         self.latest_episode_set.setText(self.get_latest_webtoon_episode())
+        self.loading_bar.setValue(0)
+
 
     def download_folder_path_select(self):
         if self.download_folder_path_set_text.text() == '':
@@ -123,26 +146,46 @@ class Webtooncrawler(QWidget):
                 self.webtoon.append((index, webtoon_search_tag_a.get_text(), webtoon_titleId.group(1)))
                 self.search_webtoon_list.addItem('{}. {}'.format(index, webtoon_search_tag_a.get_text()))
 
-    # def webtoon_images_download(self):
-    #     headers = {'Referer': 'https://www.naver.com/'}
-    #     for i in range(start, end + 1):
-    #         img_list = self.get_image_tag_list(i)
-    #         os.mkdir('{}화'.format(i))
-    #         for index, img in enumerate(img_list):
-    #             response = requests.get(img['src'], headers=headers)
-    #             os.chdir("{}화".format(i))
-    #             with open('image{}.jpg'.format(index), 'wb') as image:
-    #                 image.write(response.content)
-    #             path = "{}화/image{}.jpg".format(i, index)
-    #             os.chdir('..')
-    #             if index == 0:
-    #                 with open('{}화.html'.format(i), 'a+') as html:
-    #                     html.write('<div style="width:690; margin:0 auto;"><img src={path}> \n'.format(path=path))
-    #             else:
-    #                 with open('{}화.html'.format(i), 'a+') as html:
-    #                     html.write('<img src={path}> \n'.format(path=path))
-    #         with open('{}화.html'.format(i), 'a+') as html:
-    #             html.write('</div>'.format(path=path))
+    def webtoon_images_download(self):
+        try:
+            os.mkdir(self.webtoon_name)
+            os.chdir(os.getcwd() + '/' + self.webtoon_name)
+        except FileExistsError:
+            os.chdir(os.getcwd() + '/' + self.webtoon_name)
+        headers = {'Referer': 'https://www.naver.com/'}
+        start = int(self.episdoe_min_range_input.text())
+        end = int(self.episdoe_max_range_input.text()) + 1
+        self.loading_bar.setRange(0, end - start)
+        episode_range = range(start, end)
+        for episode in episode_range:
+            img_list = self.get_image_tag_list(episode)
+            try:
+                os.mkdir('{}화'.format(episode))
+                for index, img in enumerate(img_list):
+                    response = requests.get(img['src'], headers=headers)
+                    os.chdir("{}화".format(episode))
+                    with open('image{}.jpg'.format(index), 'wb') as image:
+                        image.write(response.content)
+                    path = "{}화/image{}.jpg".format(episode, index)
+                    os.chdir('..')
+                    if index == 0:
+                        with open('{}화.html'.format(episode), 'a+') as html:
+                            html.write('<div style="width:690; margin:0 auto;"><img src={path}> \n'.format(path=path))
+                    else:
+                        with open('{}화.html'.format(episode), 'a+') as html:
+                            html.write('<img src={path}> \n'.format(path=path))
+                QApplication.processEvents()
+                self.loading_bar.setValue(episode)
+                if episode == 1:
+                    with open('{}화.html'.format(episode), 'a+') as html:
+                        html.write('<a href="{}화.html" style="float: right; font-size: 30px;">다음화</a></div>'.format(episode + 1))
+                else:
+                    with open('{}화.html'.format(episode), 'a+') as html:
+                        html.write('<a href="{}화.html" style="float: left; font-size: 30px;">이전화</a>\n \
+                                    <a href="{}화.html" style="float: right; font-size: 30px;">다음화</a></div>'.format(episode - 1, episode + 1))
+            except FileExistsError:
+                QMessageBox.about(self,'','{}화가 이미 있습니다 폴더를 삭제하거나 다음화 부터 받아주세요'.format(episode))
+        os.chdir('..')
 
 
 if __name__ == '__main__':
