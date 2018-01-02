@@ -3,6 +3,8 @@
 # custom
 .python-version
 .idea
+test*
+*.spec
 
 ### macOS ###
 *.DS_Store
