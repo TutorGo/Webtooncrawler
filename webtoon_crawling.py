@@ -110,7 +110,7 @@ class Webtooncrawler(QWidget):
                 self.webtoon_name = select_webtoon[1]
                 self.webtoon_titleId = select_webtoon[2]
         self.latest_episode_set.setText(self.get_latest_webtoon_episode())
-        self.loading_bar.setValue(0)
+        # self.loading_bar.setValue(0)
 
     def download_folder_path_select(self):
         if self.download_folder_path_set_text.text() == '':
@@ -154,7 +154,7 @@ class Webtooncrawler(QWidget):
             QMessageBox.about(self, '', '다운로드 폴더 입력창이 비었거 또는 웹툰 검색창에 검색할 웹툰을 입력해주세요.')
         else:
             # 웹툰 다운로드 로딩 bar를 초기화
-            self.loading_bar.setValue(0)
+            # self.loading_bar.setValue(0)
             # keyword=웹툰이름 넣기 위한 파람
             params = {"keyword": self.search_webtoon_input.text()}
             search_requests = requests.get(self.search_url, params)
@@ -186,7 +186,7 @@ class Webtooncrawler(QWidget):
         headers = {'Referer': 'https://www.naver.com/'}
         start = int(self.episdoe_min_range_input.text())
         end = int(self.episdoe_max_range_input.text()) + 1
-        self.loading_bar.setRange(0, end - start)
+        # self.loading_bar.setRange(0, end - start)
         episode_range = range(start, end)
         start_time = time.time()
         for index, episode in enumerate(episode_range):
