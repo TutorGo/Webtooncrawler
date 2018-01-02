@@ -27,6 +27,7 @@
 #### 3. Webtoon List
 
 [ 그림 3-1 ]
+
 <img src="./image/crawler_webtoon_list.png" width="500">
 
 - 웹툰을 선택한 후 select 버튼을 클릭하면 latest episode에 선택한 웹툰의 최신화가 몇 화인지 표시됩니다. [ 그림 4-1 ]
