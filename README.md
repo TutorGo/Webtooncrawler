@@ -46,10 +46,13 @@
 - 다운로드 할 웹툰을 선택하고 범위를 episode min [1] ~ max [2] 1번 2번에 지정합니다.
 
 #### 5. downloaw
+
 [ 그림 5-1 ]
+
 <img src="./image/crawler_webtoon_download_complete.png" width="500">
 
 [ 그림 5-2 ]
+
 <img src="./image/crawler_webtoon_download_complete2.png" width="500">
 
 - download 버튼을 누르면 선택한 폴더에 웹툰을 다운 받습니다.
